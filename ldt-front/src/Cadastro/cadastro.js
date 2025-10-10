@@ -1,52 +1,54 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-
+// Se estiver usando React Router, descomente abaixo
+// import { useNavigate } from "react-router-dom";
 
 const Cadastro = () => {
-    
+    // const navigate = useNavigate(); // Se usar React Router
+
     const [email, setEmail] = useState('');
     const [nome, setNome] = useState('');
     const [password, setPassword] = useState('');
-    const [mensagem, setMensagem] = useState('');
 
-    const handleLogin = async (e) => {
+    const validarEmail = (email) => {
+        // Validação simples de email
+        return /\S+@\S+\.\S+/.test(email);
+    };
+
+    const handleCadastro = async (e) => {
         e.preventDefault();
-    
-        try {
-            // funcionara para quando for necessário autorização
-            // const token = localStorage.getItem("token");
-            // Configura os headers para a requisição com o token
-            // const config = {
-            //     headers: {
-            //         Authorization: `Bearer ${token}`,
-            //     },
-            // };
-            // await axios.post('http://localhost:3001/users', config, {
-            //     nome, email, password
-            // });
 
+        if (!nome || !email || !password) {
+            toast.error('Por favor, preencha todos os campos');
+            return;
+        }
+
+        if (!validarEmail(email)) {
+            toast.error('Email inválido');
+            return;
+        }
+
+        try {
             await axios.post('http://localhost:3001/users', {
                 nome, email, password
             });
-            console.log('Usuário cadastrado com sucesso');
             toast.success('Usuário cadastrado com sucesso');
-            setTimeout(() => {window.location.replace('http://localhost:3000/')}, 3000)
+            // Redirecionar para login ou home
+            // navigate('/login'); // Se usar React Router
         } catch (error) {
-            console.log('Não foi possivel cadastrar novo usuário',error)
-            toast.error('Não foi possivel cadastrar novo usuário')
+            toast.error('Não foi possível cadastrar novo usuário');
         }
     };
 
-
     return (
         <div className="container">
-            <form onSubmit={handleLogin}>
+            <form onSubmit={handleCadastro}>
                 <h2>Cadastro</h2>
                 <div>
                     <label>Nome: </label>
                     <input
-                        type="nome"
+                        type="text"
                         value={nome}
                         onChange={(e) => setNome(e.target.value)} />
                 </div>
@@ -64,12 +66,10 @@ const Cadastro = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)} />
                 </div>
-                
-                <button type="submit">Cadastro</button>
+                <button type="submit">Cadastrar</button>
             </form>
         </div>
     );
-    {mensagem && alert(mensagem)}
 };
 
 export default Cadastro;
