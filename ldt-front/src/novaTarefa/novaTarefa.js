@@ -14,23 +14,25 @@ const NovaTarefa = () => {
     const createTask = async (e) => {
         e.preventDefault();
 
-        if (!title || !description || !expirationDate) {
+        if (!title.trim() || !description.trim() || !expirationDate.trim()) {
             toast.error('Preencha todos os campos');
             return;
         }
 
         try {
             await instance.post('/task', {
-                title,
-                description,
-                expirationDate,
+                title: title.trim(),
+                description: description.trim(),
+                expirationDate: expirationDate.trim(),
                 status: 'TO_DO'
             });
             toast.success('Task criada com sucesso');
+            setTitle('');
+            setDescription('');
+            setExpirationDate('');
             // Redirecionar para lista de tarefas
             // navigate('/listadetarefas'); // Se usar React Router
         } catch (error) {
-            console.log('Não foi possível criar a task');
             toast.error('Não foi possível criar a task');
         }
     };
