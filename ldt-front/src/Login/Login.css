@@ -1,32 +1,37 @@
-.container{
+.container {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-  }
-  
-  form{
+}
+
+form {
     background-color: #fff;
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
     width: 300px;
-  }
-  
-  input[type=email],
-  input[type=nome],
-  input[type=password]{
+}
+
+input[type=email],
+input[type=password] {
     width: 100%;
     padding: 10px;
-    margin: 5px 0;
+    margin: 8px 0; /* Espaçamento melhorado */
     border: 1px solid #ccc;
     border-radius: 3px;
     box-sizing: border-box;
-  }
-  
-  button[type=submit]{
+    outline: none;
+}
+
+input[type=email]:focus,
+input[type=password]:focus {
+    border-color: #007bff;
+}
+
+button[type=submit] {
     width: 100%;
     background-color: #007bff;
     color: #fff;
@@ -35,19 +40,24 @@
     border-radius: 3px;
     cursor: pointer;
     font-size: 16px;
-  }
-  input[type=submit]:hover{
-  background-color: #0056b3;
-  }
-  .proxPg{
+    transition: background-color 0.2s;
+}
+
+button[type=submit]:hover {
+    background-color: #0056b3;
+}
+
+.proxPg {
     margin-top: 8px;
     font-size: 12px;
     text-align: center;
-  }
-  .cliqueAqui{
+}
+
+.cliqueAqui {
     color: #0056b3;
     font-weight: bold;
-  }
-  .login{
+}
+
+.login {
     text-align: center;
-  }
+}

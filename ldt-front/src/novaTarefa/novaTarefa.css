@@ -3,17 +3,17 @@
     padding: 0;
     margin: 0;
     box-sizing: border-box;
-    font-family: Verdana;
+    font-family: Verdana, sans-serif;
     color: #333;
-  }
-  
-  body {
+}
+
+body {
     background-color: black;
-  }
-  
-  button {
+}
+
+button {
     background-color: #fdfdfd;
-    color: black  ;
+    color: black;
     border: 2px solid black;
     padding: 0.3rem 0.6rem;
     font-size: 1rem;
@@ -21,79 +21,89 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: 0.4s;
-  }
-  
-  button:hover {
+    transition: background-color 0.4s;
+}
+
+button:hover {
     background-color: #9ab0ce;
-  }
-  
-  button:hover > i {
-    color: #fff;
-  }
-  
-  button i {
+}
+
+button i {
     pointer-events: none;
     color: #102f5e;
     font-weight: bold;
-  }
-  
-  input
-   {
-  
+}
+
+input {
     padding: 0.25rem 0.5rem;
-  }
-  
-  .hide {
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+input:focus {
+    border-color: #9ab0ce;
+}
+
+.hide {
     display: none;
-  }
-  
-  /* Todo Header */
-  .todo-container {
+}
+
+/* Todo Header */
+.todo-container {
     max-width: 450px;
     margin: 3rem auto 0;
     background-color: #fdfdfd;
     padding: 1.5rem;
     border-radius: 15px;
-  }
-  
-  .todo-container header {
+}
+
+.todo-container header {
     text-align: center;
     padding: 0 1rem 1rem;
     border-bottom: 1px solid #ccc;
-  }
-  
-  /* Todo Form */
-  #todo-form
-{
+}
+
+/* Todo Form */
+#todo-form {
     margin-left: 50px;
     padding: 1rem;
     border-bottom: 1px solid #ccc;
-  }
-  
-  #todo-form p
-  {
+}
+
+#todo-form p {
     margin-bottom: 0.5rem;
     font-weight: bold;
-  }
-  .createTask{
+}
+
+.createTask {
     text-align: center;
     font-size: 25px;
-  }
-  .caixa{
+    margin-bottom: 20px;
+}
+
+.caixa {
     margin-bottom: 10px;
-  }
-  .botao{
+}
+
+.botao {
     margin-top: 10px;
-  }
-  .newTask{
+    width: 100%;
+}
+
+.newTask {
     margin-left: 120px;
     color: black;
-  }
-  .serch{
+}
+
+.search {
     color: black;
-  }
-  .novaTarefa{
+}
+
+.novaTarefa {
     text-align: center;
-    
-  }
+    margin-bottom: 20px;
+}

@@ -1,16 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import axios from "axios";
-import { useState } from "react";
 import { toast } from "react-toastify";
 
 const LoginPage = () => {
 
     const[email, setEmail] = useState(' ');
-    const[password, setPassword] = useState('');
-    const[mensagem, setMensagem] = useState(' ');
+    const[password, setPassword] = useState(' ');
 
     const handleLogin = async(e) =>{
         e.preventDefault();
+
+        if (!email || !password) {
+            toast.error('Preencha todos os campos');
+            return;
+        }
 
         try {
             const response = await axios.post('http://localhost:3001/auth/login', { 
@@ -58,7 +61,7 @@ const LoginPage = () => {
             <button type = "submit" >Login</button>
             
                 <div className="proxPg">
-                <h8> Ainda não tem cadastro? <a className="cliqueAqui" href="/cadastro">Clique Aqui!</a> </h8>
+                <span> Ainda não tem cadastro? <a className="cliqueAqui" href="/cadastro">Clique Aqui!</a> </span>
                 </div>
             
             </form>
@@ -66,7 +69,6 @@ const LoginPage = () => {
         </div>
 
     );
-    mensagem && alert(mensagem)
 };
 
 export default LoginPage;
