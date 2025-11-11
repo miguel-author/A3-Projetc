@@ -1,72 +1,77 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
-import {  TaskDTO, UpdateTaskDTO } from '../DTO/task.DTO';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Tasks } from '../entity/task.entity';
 import { Repository } from 'typeorm';
-import { UsersService } from 'src/users/service/users.service';
-import { User } from 'src/users/entity/user.entity';
+import { Tasks } from '../entity/task.entity';
+import { TaskDTO } from '../DTO/task.DTO';
 
+/**
+ * Serviço responsável pela lógica de negócios relacionada às Tasks.
+ * 
+ * Este serviço interage com o banco de dados via TypeORM, realizando operações
+ * de CRUD (criação, leitura, atualização e exclusão).
+ */
 @Injectable()
 export class TaskService {
+  constructor(
+    @InjectRepository(Tasks)
+    private readonly taskRepository: Repository<Tasks>,
+  ) {}
 
-    constructor(
-        @InjectRepository(Tasks)
-        private taskRepository: Repository<Tasks>,
-        private userService: UsersService
-    ){}
+  /**
+   * Cria uma nova task.
+   * @param task Dados recebidos do DTO.
+   * @returns Task criada e persistida no banco de dados.
+   */
+  async create(task: TaskDTO): Promise<Tasks> {
+    const newTask = this.taskRepository.create(task);
+    return this.taskRepository.save(newTask);
+  }
 
-    // async create(newTask: TaskDTO): Promise<Tasks> {
-    //     const task = new Tasks();
-    //     task.title = newTask.title;
-    //     task.description = newTask.description;
-    //     task.expirationDate = newTask.expirationDate;
-    //     task.status = 'TO_DO';  // Defina o status padrão aqui
+  /**
+   * Retorna todas as tasks cadastradas.
+   * @returns Lista de tasks.
+   */
+  async findAll(): Promise<Tasks[]> {
+    return this.taskRepository.find();
+  }
 
-    //     return this.taskRepository.save(task);
-    // }
-    async create(newTask: TaskDTO): Promise<Tasks> {
-        const user = await this.userService.findById(newTask.id);
-        if (!user) {
-          throw new NotFoundException(`Usuário não encontrado.`);
-        }
-        const createTask = this.taskRepository.create({
-          ...newTask,
-          user: user, 
-        });
-        return await this.taskRepository.save(createTask);
+  /**
+   * Busca uma task específica pelo ID.
+   * 
+   * @param id Identificador numérico da task.
+   * @returns A task encontrada, ou lança NotFoundException.
+   */
+  async findById(id: number): Promise<Tasks> {
+    const task = await this.taskRepository.findOne({ where: { id } });
+    if (!task) {
+      throw new NotFoundException('Task não encontrada.');
     }
+    return task;
+  }
 
-    async findById(id: number): Promise<Tasks> {
-        const foundTask = await this.taskRepository.findOne({
-            where: {id: id},
-            relations: ['user'],
-        });
+  /**
+   * Atualiza uma task existente.
+   * 
+   * @param id ID da task que será atualizada.
+   * @param updatedTask Campos a serem atualizados.
+   * @returns Task atualizada.
+   */
+  async update(id: number, updatedTask: Partial<Tasks>): Promise<Tasks> {
+    const task = await this.findById(id);
+    Object.assign(task, updatedTask); // Atualiza somente os campos enviados
+    return this.taskRepository.save(task);
+  }
 
-        if (!foundTask){
-            throw new NotFoundException(`Task não encontrada.`)
-        }
-        return foundTask
+  /**
+   * Exclui uma task pelo ID.
+   * 
+   * @param id ID da task a ser excluída.
+   * @throws NotFoundException se o ID não existir.
+   */
+  async deleteTask(id: number): Promise<void> {
+    const result = await this.taskRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException('Task não encontrada.');
     }
-
-    async findAll(): Promise<Tasks[]> {
-        return await this.taskRepository.find();
-    }
-  
-    async update(
-        id: number,
-        task: Partial<Tasks>
-    ): Promise<Tasks> {
-
-        await this.taskRepository.update(id, task)
-        return this.taskRepository.findOneBy({id})
-        //const task = await this.findById(id);
-        //delete updateTask.id;
-        //const update = this.taskRepository.merge(task, updateTask);
-        //await this.taskRepository.save(update);
-        
-    }
-
-    async deleteTask(id: number): Promise<void>{
-        await this.taskRepository.delete(id);
-    }
+  }
 }

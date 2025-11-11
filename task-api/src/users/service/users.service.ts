@@ -1,51 +1,53 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { UserDTO } from 'src/users/DTO/user.DTO';
-import { User } from '../entity/user.entity';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import * as bcrypt from 'bcryptjs';
+import { User } from '../entity/user.entity';
+import { UserDTO } from '../DTO/user.DTO';
 
+/**
+ * Serviço responsável pela lógica de negócios dos usuários.
+ * 
+ * Este serviço utiliza o TypeORM para realizar operações CRUD (criar, listar e buscar usuários).
+ */
 @Injectable()
 export class UsersService {
-    constructor (
-        @InjectRepository(User)
-        private userRepository: Repository<User>
-        ) {}
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
 
-    async create(newUserDto: UserDTO): Promise<User> {
-        try {
-          const saltOrRounds = 10;
-          const hash = await bcrypt.hash(newUserDto.password, saltOrRounds);
-          newUserDto.password = hash;
-          return await this.userRepository.save(
-            this.userRepository.create(newUserDto)
-          );
-        } catch (error: any) {
-          if (error.code === "ER_DUP_ENTRY") {
-            throw new HttpException("Email já registrado.", HttpStatus.BAD_REQUEST);
-          } else {
-            throw new HttpException(
-              "Erro ao criar o registro. Tente novamente mais tarde.",
-              HttpStatus.INTERNAL_SERVER_ERROR
-            );
-          }
-        }
-      }
+  /**
+   * Cria um novo usuário no banco de dados.
+   * 
+   * @param user Dados do usuário (DTO).
+   * @returns Usuário criado.
+   */
+  async create(user: UserDTO): Promise<User> {
+    const newUser = this.userRepository.create(user);
+    return this.userRepository.save(newUser);
+  }
 
-    async findAll(): Promise<User[]>{
-      return await this.userRepository.find({ relations: ['task'] })
+  /**
+   * Retorna todos os usuários cadastrados.
+   * 
+   * @returns Lista de usuários.
+   */
+  async findAll(): Promise<User[]> {
+    return this.userRepository.find();
+  }
+
+  /**
+   * Busca um usuário específico pelo ID.
+   * 
+   * @param id Identificador do usuário.
+   * @returns Usuário encontrado.
+   * @throws NotFoundException se o usuário não existir.
+   */
+  async findById(id: number): Promise<User> {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
     }
-
-    async findById(id: number): Promise<User>{
-        const user = await this.userRepository.findOne({
-            where: { id_user: id },
-            relations: ["task"],
-        });
-
-        if (!user){
-            throw new HttpException(`Useário não encontrado.`, HttpStatus.NOT_FOUND);
-        }
-        return user;
-    }
-
+    return user;
+  }
 }
