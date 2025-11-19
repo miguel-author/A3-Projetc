@@ -1,40 +1,48 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { AuthService } from './auth.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User, UserDocument } from 'src/users/schemas/user.schema';
 
 /**
- * JwtStrategy
+ * Estratégia JWT
  *
- * Estratégia responsável por validar o token JWT e garantir que o usuário
- * autenticado tenha acesso às rotas protegidas do sistema.
+ * Responsável por validar o token JWT e carregar o usuário autenticado
+ * nas requisições protegidas.
  */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private readonly authService: AuthService) {
+  constructor(
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
+  ) {
     super({
-      // Extrai o token do header Authorization: Bearer <token>
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-
-      // Boa prática: usa variável de ambiente
       secretOrKey: process.env.JWT_SECRET || 'seusegredoaqui',
     });
   }
 
   /**
-   * 🔍 Método chamado automaticamente após a validação do token JWT.
-   * Aqui podemos buscar o usuário no banco ou simplesmente retornar os dados do payload.
-   *
-   * @param payload Dados do token (sub, username, etc)
-   * @returns Dados do usuário validados
+   * Executado automaticamente após o token ser validado.
+   * Aqui buscamos o usuário real no banco.
    */
   async validate(payload: any) {
-    // (Opcional) Pode validar se o usuário ainda existe no banco:
-    // const user = await this.authService.validateUserById(payload.sub);
-    // if (!user) throw new UnauthorizedException('Usuário não encontrado ou inválido');
+    const user = await this.userModel
+      .findById(payload.sub)
+      .select('-password') // remove a senha por segurança
+      .exec();
 
-    // Retorna os dados básicos do usuário autenticado
-    return { userId: payload.sub, username: payload.username };
+    if (!user) {
+      throw new UnauthorizedException('Usuário não encontrado.');
+    }
+
+    // O que retornar aqui vira req.user
+    return {
+      _id: user._id.toString(),
+      email: user.email,
+      nome: user.nome,
+    };
   }
 }

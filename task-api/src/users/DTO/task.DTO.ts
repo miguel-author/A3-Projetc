@@ -1,58 +1,38 @@
-import { ApiProperty, PartialType } from "@nestjs/swagger";
-import { IsUUID, MinLength, IsString, MaxLength, IsEnum, IsOptional, IsDateString } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional, IsString, IsEnum, IsDateString } from 'class-validator';
 
-export enum TaskStatusEnum{
-    TO_DO = 'TO_DO',
-    DONE = 'DONE'
-}
-export class TaskDTO{
+export class TaskDTO {
+  @ApiProperty({ example: 'Estudar NestJS', description: 'Título da tarefa' })
+  @IsNotEmpty()
+  @IsString()
+  title: string;
 
-    @ApiProperty({description: "Id da task criada"})
-    @IsUUID()
-    @IsOptional()
-    id: number;
-    
-    @ApiProperty({
-        description: "Titulo da task criada",
-        example: "Limpar a casa",
-    })
-    @IsString()
-    @MinLength(3)
-    @MaxLength(256)
-    title: string;
+  @ApiProperty({ example: 'Finalizar módulo de Mongoose', required: false })
+  @IsOptional()
+  @IsString()
+  description?: string;
 
+  @ApiProperty({
+    enum: ['pendente', 'progresso', 'concluída'],
+    default: 'pendente',
+  })
+  @IsOptional()
+  @IsEnum(['pendente', 'progresso', 'concluída'])
+  status?: string;
 
-    @ApiProperty({
-        description: "Descrição da task",
-        example:"Limpar toda a casa e não esquecer de estender a roupa",
-    })
-    @IsString()
-    @MinLength(3)
-    @MaxLength(256)
-    description: string;
+  @ApiProperty({
+    example: '2025-12-31',
+    description: 'Data de expiração da tarefa (formato ISO)',
+    required: false,
+  })
+  @IsOptional()
+  @IsDateString()
+  expirationDate?: Date;
 
-
-    @ApiProperty({
-        description: "Status da Task(TO_DO, IN_PROGRESS, DONE)",
-        example: "IN_PROGRESS",
-    })
-    @IsEnum(TaskStatusEnum)
-    @IsOptional()
-    status: string;
-
-
-    @ApiProperty({
-        description: "Data de expiração da task",
-        example: "30/05/2024"
-    })
-    @IsDateString()
-    @IsOptional()
-    expirationDate: string;
-}
-
-
-export class UpdateTaskDTO extends PartialType(TaskDTO){}
-export interface FindAllParameters{
-    title: string;
-    status: string;
+  @ApiProperty({
+    example: '6734df09121a19c70646605f',
+    description: 'ID do usuário ao qual a tarefa pertence',
+  })
+  @IsNotEmpty()
+  userId: string;
 }

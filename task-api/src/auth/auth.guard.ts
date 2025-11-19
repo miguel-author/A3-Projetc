@@ -1,32 +1,20 @@
-import { Injectable, ExecutionContext } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard as NestAuthGuard } from '@nestjs/passport';
 
 /**
- * AuthGuard
- *
- * Guard responsável por proteger rotas autenticadas via JWT.
- * Ele utiliza a estratégia 'jwt' configurada em JwtStrategy.
+ * Guard responsável por proteger rotas utilizando autenticação JWT.
+ * Caso o token seja inválido ou ausente, o acesso será negado.
  */
 @Injectable()
-export class AuthGuard extends NestAuthGuard('jwt') {
-  /**
-   * Método opcional que permite personalizar o comportamento da autenticação.
-   * Aqui poderíamos, por exemplo, adicionar logs, validações extras ou tratar erros.
-   */
-  canActivate(context: ExecutionContext) {
-    // Mantém o comportamento padrão do Passport
-    return super.canActivate(context);
-  }
+export class JwtAuthGuard extends NestAuthGuard('jwt') {
 
   /**
-   * Método opcional para manipular a requisição após a validação do token.
-   * Pode ser usado, por exemplo, para anexar dados adicionais ao request.
+   * Método responsável por lidar com o resultado da validação do token.
+   * Se o usuário não for encontrado ou houver erro, lança 401 (Unauthorized).
    */
-  handleRequest(err: any, user: any, info: any, context: ExecutionContext) {
+  handleRequest(err: any, user: any) {
     if (err || !user) {
-      // Caso o token seja inválido ou ausente
-      // Aqui poderíamos lançar um UnauthorizedException customizado, se necessário.
-      return null;
+      throw new UnauthorizedException('Token inválido ou ausente.');
     }
     return user;
   }

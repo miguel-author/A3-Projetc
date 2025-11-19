@@ -1,53 +1,56 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from '../entity/user.entity';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import { User, UserDocument } from '../schemas/user.schema';
+import { Task, TaskDocument } from '../schemas/task.schema';
 import { UserDTO } from '../DTO/user.DTO';
 
-/**
- * Serviço responsável pela lógica de negócios dos usuários.
- * 
- * Este serviço utiliza o TypeORM para realizar operações CRUD (criar, listar e buscar usuários).
- */
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(Task.name) private readonly taskModel: Model<TaskDocument>,
   ) {}
 
-  /**
-   * Cria um novo usuário no banco de dados.
-   * 
-   * @param user Dados do usuário (DTO).
-   * @returns Usuário criado.
-   */
-  async create(user: UserDTO): Promise<User> {
-    const newUser = this.userRepository.create(user);
-    return this.userRepository.save(newUser);
-  }
+  async create(dto: UserDTO): Promise<User> {
+    const exists = await this.userModel.findOne({ email: dto.email });
 
-  /**
-   * Retorna todos os usuários cadastrados.
-   * 
-   * @returns Lista de usuários.
-   */
-  async findAll(): Promise<User[]> {
-    return this.userRepository.find();
-  }
-
-  /**
-   * Busca um usuário específico pelo ID.
-   * 
-   * @param id Identificador do usuário.
-   * @returns Usuário encontrado.
-   * @throws NotFoundException se o usuário não existir.
-   */
-  async findById(id: number): Promise<User> {
-    const user = await this.userRepository.findOne({ where: { id } });
-    if (!user) {
-      throw new NotFoundException('Usuário não encontrado.');
+    if (exists) {
+      throw new BadRequestException('Este email já está registrado.');
     }
+
+    const user = new this.userModel(dto);
+    const saved = await user.save();
+    return saved.toObject({ versionKey: false });
+  }
+
+  async findAll(): Promise<User[]> {
+    return this.userModel.find().select('-password').lean().exec();
+  }
+
+  async findById(id: string): Promise<User> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('ID inválido.');
+    }
+
+    const user = await this.userModel.findById(id).select('-password').lean().exec();
+    if (!user) throw new NotFoundException('Usuário não encontrado.');
+
     return user;
+  }
+
+  async update(id: string, dto: Partial<User>): Promise<User> {
+    const updated = await this.userModel
+      .findByIdAndUpdate(id, dto, { new: true })
+      .select('-password')
+      .exec();
+
+    if (!updated) throw new NotFoundException('Usuário não encontrado.');
+    return updated;
+  }
+
+  async remove(id: string): Promise<void> {
+    const deleted = await this.userModel.findByIdAndDelete(id).exec();
+    if (!deleted) throw new NotFoundException('Usuário não encontrado.');
   }
 }

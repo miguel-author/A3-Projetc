@@ -1,33 +1,44 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { DatabaseModule } from '../database/database.module';
-import { User } from './entity/user.entity';
-import { Tasks } from './entity/task.entity';
-import { UsersService } from './service/users.service';
+import { MongooseModule } from '@nestjs/mongoose';
+
+// Schemas Mongoose
+import { User, UserSchema } from './schemas/user.schema';
+import { Task, TaskSchema } from './schemas/task.schema';
+
+// Controllers
 import { UsersController } from './controller/users.controller';
-import { TaskService } from './service/task.service';
 import { TaskController } from './controller/task.controller';
 
+// Services
+import { UsersService } from './service/users.service';
+import { TaskService } from './service/task.service';
+
 /**
- * Módulo responsável pelo gerenciamento de usuários e tarefas.
+ * Módulo responsável pelas funcionalidades de Usuários e Tarefas.
  * 
- * Este módulo centraliza todos os serviços, controladores e entidades
- * relacionados a usuários e suas respectivas tarefas.
+ * - Registra Schemas do MongoDB usando MongooseModule.
+ * - Expõe Controllers para rotas HTTP.
+ * - Expõe Services para lógica de negócio e acesso ao banco.
  */
 @Module({
   imports: [
-    // Importa o módulo de banco de dados e registra as entidades User e Tasks
-    DatabaseModule,
-    TypeOrmModule.forFeature([User, Tasks]),
+    // Registra os modelos User e Task no Mongoose
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: Task.name, schema: TaskSchema },
+    ]),
   ],
-
-  // Controladores responsáveis por lidar com as rotas HTTP
-  controllers: [UsersController, TaskController],
-
-  // Serviços que contêm a lógica de negócio da aplicação
-  providers: [UsersService, TaskService],
-
-  // Exporta serviços que poderão ser usados em outros módulos (ex: AuthModule)
-  exports: [UsersService, TaskService],
+  controllers: [
+    UsersController,
+    TaskController,
+  ],
+  providers: [
+    UsersService,
+    TaskService,
+  ],
+  exports: [
+    UsersService,
+    TaskService,
+  ],
 })
 export class UserModule {}

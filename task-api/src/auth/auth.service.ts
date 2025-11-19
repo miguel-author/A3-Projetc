@@ -1,72 +1,70 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { User } from 'src/users/entity/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User, UserDocument } from 'src/users/schemas/user.schema';
 
-/**
- * Serviço responsável pela autenticação e gerenciamento de tokens JWT.
- * 
- * Contém métodos para validação de usuários, geração de tokens e registro de novos usuários.
- */
 @Injectable()
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
 
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    // Agora usando modelo do Mongoose em vez de TypeORM Repository
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
   ) {}
 
   /**
-   * Valida as credenciais de um usuário.
-   * 
-   * @param username Nome de usuário.
-   * @param password Senha informada.
-   * @returns O usuário autenticado, se as credenciais forem válidas.
-   * @throws UnauthorizedException se as credenciais forem inválidas.
+   * Valida usuário pelo email e senha.
    */
-  async validateUser(username: string, password: string): Promise<User> {
-    const user = await this.userRepository.findOne({ where: { username } });
-    const passwordIsValid = user && (await bcrypt.compare(password, user.password));
+  async validateUser(email: string, password: string): Promise<UserDocument> {
+    const user = await this.userModel.findOne({ email }).exec();
+
+    if (!user) {
+      throw new UnauthorizedException('Usuário ou senha incorretos.');
+    }
+
+    const passwordIsValid = await bcrypt.compare(password, user.password);
 
     if (!passwordIsValid) {
-      throw new UnauthorizedException('Credenciais inválidas.');
+      throw new UnauthorizedException('Usuário ou senha incorretos.');
     }
 
     return user;
   }
 
   /**
-   * Gera um token JWT para um usuário autenticado.
-   * 
-   * @param user Usuário autenticado.
-   * @returns Objeto contendo o token de acesso.
+   * Gera token JWT para usuário autenticado.
    */
-  async login(user: User): Promise<{ access_token: string }> {
-    const payload = { username: user.nome, sub: user.id_user };
-    const access_token = this.jwtService.sign(payload);
+  async login(user: UserDocument): Promise<{ access_token: string }> {
+    const payload = {
+      sub: user._id.toString(), // identifica o usuário no token
+      email: user.email,
+    };
 
-    return { access_token };
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
   }
 
   /**
-   * Registra um novo usuário no sistema.
-   * 
-   * A senha é criptografada antes de salvar no banco.
-   * 
-   * @param user Dados do novo usuário.
-   * @returns Usuário criado.
+   * Registra novo usuário (criptografando senha).
    */
-  async register(user: Partial<User>): Promise<User> {
-    const hashedPassword = await bcrypt.hash(user.password, 10);
+  async register(userData: Partial<User>): Promise<User> {
+    const exists = await this.userModel.findOne({ email: userData.email }).exec();
 
-    const newUser = this.userRepository.create({
-      ...user,
+    if (exists) {
+      throw new UnauthorizedException('Este email já está registrado.');
+    }
+
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+
+    const newUser = new this.userModel({
+      ...userData,
       password: hashedPassword,
     });
 
-    return this.userRepository.save(newUser);
+    return newUser.save();
   }
 }

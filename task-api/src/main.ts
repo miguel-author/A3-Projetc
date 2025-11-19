@@ -1,54 +1,48 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { HttpException, HttpStatus, ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, HttpException, HttpStatus } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import * as dotenv from 'dotenv';
 
 async function bootstrap() {
-  // Cria a aplicação principal a partir do módulo raiz (AppModule)
+  // Carrega variáveis do .env (caso ainda não estejam carregadas)
+  dotenv.config();
+
   const app = await NestFactory.create(AppModule);
 
-  // Habilita CORS (Cross-Origin Resource Sharing)
-  // Necessário para permitir que o front-end acesse a API
-  // Pode ser configurado com origem e métodos específicos em produção
+  // Habilita CORS — necessário para permitir requisições externas (ex: frontend React)
   app.enableCors();
 
-  // Configuração do Swagger para documentação automática da API
+  // Swagger (documentação automática da API)
   const config = new DocumentBuilder()
-    .setTitle('Text-Corr')
-    .setDescription('Aplicação para correlação entre documentos')
-    .setVersion('1.0')
+    .setTitle('Task API')
+    .setDescription('API para gerenciamento de usuários e tarefas com MongoDB')
+    .setVersion('1.0.0')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('/api/docs', app, document);
 
-  //  Aplica validação global em todos os endpoints
-  // - whitelist: remove campos não definidos nos DTOs
-  // - forbidNonWhitelisted: rejeita campos extras não esperados
-  // - transform: converte tipos automaticamente conforme DTOs
+  // Validação global para DTOs
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
+      whitelist: true, // remove campos não permitidos
+      forbidNonWhitelisted: true, // bloqueia payloads suspeitos
       transform: true,
       exceptionFactory: (errors) =>
         new HttpException(
-          {
-            message: 'Entrada de dados inválida',
-            errors: errors,
-          },
+          { message: 'Entrada de dados inválida', errors },
           HttpStatus.BAD_REQUEST,
         ),
     }),
   );
 
-  //  Inicia o servidor na porta definida em variável de ambiente ou 3001
-  const port = process.env.PORT ? Number(process.env.PORT) : 3001;
-  await app.listen(port);
+  // Porta configurável via .env ou fallback padrão
+  const PORT = process.env.PORT || 3001;
 
-  //  Loga no console a URL do servidor
-  console.log(`Servidor rodando em http://localhost:${port}`);
+  await app.listen(PORT);
+  console.log(`🚀 Servidor rodando em: http://localhost:${PORT}`);
+  console.log(`📄 Swagger disponível em: http://localhost:${PORT}/api/docs`);
 }
 
-// 🔁 Executa a função de inicialização
 bootstrap();
