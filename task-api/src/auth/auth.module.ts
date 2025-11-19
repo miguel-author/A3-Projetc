@@ -20,7 +20,7 @@ import { User, UserSchema } from 'src/users/schemas/user.schema';
     // JWT configurado com variáveis de ambiente
     JwtModule.registerAsync({
       useFactory: () => ({
-        secret: process.env.JWT_SECRET || 'seusegredoaqui',
+        secret: process.env.JWT_SECRET || 'chavesegura',
         signOptions: {
           expiresIn: String(process.env.JWT_EXPIRES || '1h'),
         },
