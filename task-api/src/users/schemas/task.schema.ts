@@ -1,12 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type TaskDocument = Task & Document;
 
-/**
- * Schema de Task (tarefa).
- * Conecta-se ao usuário via userId (referência).
- */
 @Schema({
   collection: 'tasks',
   timestamps: true,
@@ -28,9 +24,9 @@ export class Task {
   @Prop()
   expirationDate: Date;
 
-  // Referência ao usuário dono da Task
-  @Prop({ required: true })
-  userId: string;
+  
+  @Prop({ type: String, ref: 'User', required: true })
+userId: string;
 }
 
 export const TaskSchema = SchemaFactory.createForClass(Task);

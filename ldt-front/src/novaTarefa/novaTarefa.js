@@ -1,83 +1,41 @@
-import React, { useState } from "react";
-import instance from "../config/axiosConfig";
-import { toast } from "react-toastify";
-// import { useNavigate } from "react-router-dom"; // Se usar React Router
-import './novaTarefa.css';
+import { useState } from "react";
+import { createTask } from "../service/service";
 
-const NovaTarefa = () => {
-    // const navigate = useNavigate(); // Se usar React Router
+export default function NovaTarefa() {
+  const [title, setTitle] = useState("");
 
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [expirationDate, setExpirationDate] = useState('');
+  async function handleSubmit(e) {
+    e.preventDefault();
 
-    const createTask = async (e) => {
-        e.preventDefault();
+    try {
+      await createTask({
+        title,
+        description: "Criada via front",
+        status: "pendente",
+        expirationDate: new Date().toISOString().split("T")[0],
+      });
 
-        if (!title.trim() || !description.trim() || !expirationDate.trim()) {
-            toast.error('Preencha todos os campos');
-            return;
-        }
+      alert("Tarefa criada com sucesso!");
+      window.location.href = "/LDT";
+    } catch (err) {
+      console.log(err);
+      alert("Erro ao criar tarefa");
+    }
+  }
 
-        try {
-            await instance.post('/task', {
-                title: title.trim(),
-                description: description.trim(),
-                expirationDate: expirationDate.trim(),
-                status: 'TO_DO'
-            });
-            toast.success('Task criada com sucesso');
-            setTitle('');
-            setDescription('');
-            setExpirationDate('');
-            // Redirecionar para lista de tarefas
-            // navigate('/listadetarefas'); // Se usar React Router
-        } catch (error) {
-            toast.error('Não foi possível criar a task');
-        }
-    };
+  return (
+    <div className="todo-card">
+      <h2>Nova Tarefa</h2>
 
-    return (
-        <div className="todo-container">
-            <form id="todo-form" className="form" onSubmit={createTask}>
-                <p className="createTask">Crie sua tarefa</p>
-                <div className="novaTarefa">
-                    <h3>Título: </h3>
-                    <div className="title">
-                        <input
-                            className="caixa"
-                            type="text"
-                            value={title}
-                            placeholder="O que você vai fazer?"
-                            onChange={(e) => setTitle(e.target.value)}
-                        />
-                    </div>
-                    <h3>Descrição: </h3>
-                    <div className="descricao">
-                        <input
-                            className="caixa"
-                            type="text"
-                            value={description}
-                            placeholder="Descrição da tarefa"
-                            onChange={(e) => setDescription(e.target.value)}
-                        />
-                    </div>
-                    <h3>Data de expiração: </h3>
-                    <div className="expirationDate">
-                        <input
-                            className="caixa"
-                            type="date"
-                            value={expirationDate}
-                            onChange={(e) => setExpirationDate(e.target.value)}
-                        />
-                    </div>
-                </div>
-                <button type="submit" className="botao">
-                    OK
-                </button>
-            </form>
-        </div>
-    );
-};
+      <form onSubmit={handleSubmit} className="form-row">
+        <input
+          placeholder="Título da tarefa"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
 
-export default NovaTarefa;
+        <button className="add-btn" type="submit">Criar</button>
+      </form>
+    </div>
+  );
+}

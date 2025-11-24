@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { InjectModel } from '@nestjs/mongoose';
@@ -10,13 +10,12 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
 
-    // Agora usando modelo do Mongoose em vez de TypeORM Repository
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
   ) {}
 
   /**
-   * Valida usuário pelo email e senha.
+   * Valida usuário via email e senha
    */
   async validateUser(email: string, password: string): Promise<UserDocument> {
     const user = await this.userModel.findOne({ email }).exec();
@@ -35,11 +34,11 @@ export class AuthService {
   }
 
   /**
-   * Gera token JWT para usuário autenticado.
+   * Gera token JWT contendo userId e email
    */
   async login(user: UserDocument): Promise<{ access_token: string }> {
     const payload = {
-      sub: user._id.toString(), // identifica o usuário no token
+      sub: user._id.toString(), // 🔥 padrão correto JWT
       email: user.email,
     };
 
@@ -49,15 +48,24 @@ export class AuthService {
   }
 
   /**
-   * Registra novo usuário (criptografando senha).
+   * Registra novo usuário criptografando senha
    */
   async register(userData: Partial<User>): Promise<User> {
+    if (!userData.password) {
+      throw new BadRequestException('Senha é obrigatória.');
+    }
+
+    if (!userData.email) {
+      throw new BadRequestException('Email obrigatório.');
+    }
+
     const exists = await this.userModel.findOne({ email: userData.email }).exec();
 
     if (exists) {
       throw new UnauthorizedException('Este email já está registrado.');
     }
 
+    // Hash da senha
     const hashedPassword = await bcrypt.hash(userData.password, 10);
 
     const newUser = new this.userModel({
@@ -65,6 +73,8 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    return newUser.save();
+    const saved = await newUser.save();
+
+    return saved.toObject({ versionKey: false });
   }
 }

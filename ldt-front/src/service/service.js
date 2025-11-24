@@ -1,17 +1,21 @@
-import instance from "../config/axiosConfig";
+import api from "../config/axiosConfig";
 
-export const deleteTask = async (id) => {
-    try {
-        await instance.delete(`/task/${id}`);
-    } catch (error) {
-        console.error('Não foi possivel excluir a task', error);
-    }
-  };
+export async function getTasks() {
+  const response = await api.get("/tasks");
+  return response.data;
+}
 
-export const updateTask = async (id, taskData) => {
-    try {
-        await instance.put(`/task/${id}`, taskData);
-    } catch (error) {
-        console.error('There was an error updating the task!', error);
-    }
-};
+export async function createTask(task) {
+  const response = await api.post("/tasks", task);
+  return response.data;
+}
+
+export async function deleteTask(id) {
+  const response = await api.delete(`/tasks/${id}`);
+  return response.data;
+}
+
+export async function updateTask(id, updatedData) {
+  const response = await api.put(`/tasks/${id}`, updatedData);
+  return response.data;
+}

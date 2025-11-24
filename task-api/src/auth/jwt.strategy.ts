@@ -40,9 +40,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     // O que retornar aqui vira req.user
     return {
-      _id: user._id.toString(),
-      email: user.email,
-      nome: user.nome,
+      userId: payload.sub,
+      email: payload.email,
     };
   }
 }

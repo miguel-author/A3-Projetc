@@ -4,12 +4,15 @@ import { Model, Types } from 'mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
 import { Task, TaskDocument } from '../schemas/task.schema';
 import { UserDTO } from '../DTO/user.DTO';
+import { Counter } from '../schemas/counter.schema';
+import { getNextSequence } from 'src/utils/getNextSequence';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
     @InjectModel(Task.name) private readonly taskModel: Model<TaskDocument>,
+    @InjectModel(Counter.name) private readonly counterModel: Model<Counter>,
   ) {}
 
   async create(dto: UserDTO): Promise<User> {
@@ -18,8 +21,13 @@ export class UsersService {
     if (exists) {
       throw new BadRequestException('Este email já está registrado.');
     }
+    const nextId = await getNextSequence(this.counterModel, 'userId');
+    const user = new this.userModel({
+    ...dto,
+    id: nextId,
+  });
 
-    const user = new this.userModel(dto);
+     console.log("📦 Objeto enviado ao Mongoose:", user); // <-- DEBUG
     const saved = await user.save();
     return saved.toObject({ versionKey: false });
   }

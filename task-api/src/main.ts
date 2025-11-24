@@ -5,29 +5,30 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import * as dotenv from 'dotenv';
 
 async function bootstrap() {
-  // Carrega variáveis do .env (caso ainda não estejam carregadas)
   dotenv.config();
 
   const app = await NestFactory.create(AppModule);
 
-  // Habilita CORS — necessário para permitir requisições externas (ex: frontend React)
-  app.enableCors();
+  app.enableCors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  });
 
-  // Swagger (documentação automática da API)
+  // 🔥 Adicionando bearer auth ao Swagger
   const config = new DocumentBuilder()
     .setTitle('Task API')
     .setDescription('API para gerenciamento de usuários e tarefas com MongoDB')
     .setVersion('1.0.0')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('/api/docs', app, document);
 
-  // Validação global para DTOs
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // remove campos não permitidos
-      forbidNonWhitelisted: true, // bloqueia payloads suspeitos
+      whitelist: true,
+      forbidNonWhitelisted: true,
       transform: true,
       exceptionFactory: (errors) =>
         new HttpException(
@@ -37,10 +38,9 @@ async function bootstrap() {
     }),
   );
 
-  // Porta configurável via .env ou fallback padrão
   const PORT = process.env.PORT || 3001;
-
   await app.listen(PORT);
+
   console.log(`🚀 Servidor rodando em: http://localhost:${PORT}`);
   console.log(`📄 Swagger disponível em: http://localhost:${PORT}/api/docs`);
 }

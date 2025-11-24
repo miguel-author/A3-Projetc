@@ -3,15 +3,12 @@ import { Document } from 'mongoose';
 
 export type UserDocument = User & Document;
 
-/**
- * Schema do Usuário para MongoDB via Mongoose.
- * Inclui validações básicas para nome, email e senha.
- */
 @Schema({
   collection: 'users',
-  timestamps: true, // cria createdAt / updatedAt automaticamente
+  timestamps: true,
 })
 export class User {
+
   @Prop({ required: true, trim: true })
   nome: string;
 
@@ -20,17 +17,17 @@ export class User {
     unique: true,
     lowercase: true,
     trim: true,
-    match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, // valida email básico
+    match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   })
   email: string;
 
   @Prop({
     required: true,
-    minlength: 6, // senha mínima recomendada
+    minlength: 6,
   })
   password: string;
 
-  // IDs das tasks relacionadas
+  // Agora armazena ObjectIds das tasks
   @Prop({ type: [String], default: [] })
   tasksIds: string[];
 }

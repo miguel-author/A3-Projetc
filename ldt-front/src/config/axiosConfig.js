@@ -1,20 +1,18 @@
-import axios from 'axios';
+import axios from "axios";
 
-const instance = axios.create({
-  baseURL: 'http://localhost:3001', // Base URL do seu backend
+const api = axios.create({
+  baseURL: "http://localhost:3001", // backend NestJS
 });
 
-instance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+// Interceptor para enviar token automaticamente
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
 
-export default instance;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
+export default api;

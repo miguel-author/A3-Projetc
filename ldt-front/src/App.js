@@ -1,22 +1,40 @@
-import React from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import LoginPage from "./Login/Login";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Login from "./Login/Login";
 import Cadastro from "./Cadastro/cadastro";
-import Ldt from "./LDT/ldt";
+import LDT from "./LDT/ldt";
 import NovaTarefa from "./novaTarefa/novaTarefa";
+import ProtectedRoute from "./components/ProtectedRoute";
 
-// Componente principal da aplicação
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path='/' element={<LoginPage />} />
-        <Route path='/cadastro' element={<Cadastro />} />
-        <Route path="/listadetarefas" element={<Ldt />} />
-        <Route path="/nova-tarefa" element={<NovaTarefa />} />
+        {/* Rotas públicas */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/cadastro" element={<Cadastro />} />
+
+        {/* Rotas protegidas */}
+        <Route
+          path="/LDT"
+          element={
+            <ProtectedRoute>
+              <LDT />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/novaTarefa"
+          element={
+            <ProtectedRoute>
+              <NovaTarefa />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Default route */}
+        <Route path="*" element={<Login />} />
       </Routes>
     </BrowserRouter>
   );
 }
-
-export default App;

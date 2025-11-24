@@ -1,43 +1,47 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TaskService } from '../service/task.service';
 import { TaskDTO } from '../DTO/task.DTO';
+import { JwtAuthGuard } from '../../auth/auth.guard';
 
-/**
- * Controller responsável pelas operações CRUD de Tarefas.
- */
 @ApiTags('Tasks')
 @Controller('tasks')
+@UseGuards(JwtAuthGuard)
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Criar uma nova tarefa' })
-  create(@Body() dto: TaskDTO) {
-  return this.taskService.create(dto);
+  @ApiOperation({ summary: 'Criar nova tarefa' })
+  create(@Req() req, @Body() dto: TaskDTO) {
+    const userId = req.user.userId; // 🔥 Agora correto
+    return this.taskService.create(userId, dto);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar todas as tarefas' })
-  findAll() {
-    return this.taskService.findAll();
+  @ApiOperation({ summary: 'Listar todas as tarefas do usuário logado' })
+  findAll(@Req() req) {
+    const userId = req.user.userId;
+    return this.taskService.findAll(userId);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Buscar tarefa pelo ID' })
-  findById(@Param('id') id: string) {
-    return this.taskService.findById(id);
+  findById(@Req() req, @Param('id') id: string) {
+    const userId = req.user.userId;
+    return this.taskService.findById(id, userId);
   }
 
   @Put(':id')
-  @ApiOperation({ summary: 'Atualizar tarefa existente' })
-  update(@Param('id') id: string, @Body() dto: Partial<TaskDTO>) {
-    return this.taskService.update(id, dto);
+  @ApiOperation({ summary: 'Atualizar tarefa' })
+  update(@Req() req, @Param('id') id: string, @Body() dto: Partial<TaskDTO>) {
+    const userId = req.user.userId;
+    return this.taskService.update(id, userId, dto);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Remover tarefa pelo ID' })
-  remove(@Param('id') id: string) {
-    return this.taskService.remove(id);
+  @ApiOperation({ summary: 'Excluir tarefa' })
+  remove(@Req() req, @Param('id') id: string) {
+    const userId = req.user.userId;
+    return this.taskService.remove(id, userId);
   }
 }

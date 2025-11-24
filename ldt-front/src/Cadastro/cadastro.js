@@ -1,75 +1,57 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { toast } from "react-toastify";
-// Se estiver usando React Router, descomente abaixo
-// import { useNavigate } from "react-router-dom";
+import api from "../config/axiosConfig";
+import { useState } from "react";
 
-const Cadastro = () => {
-    // const navigate = useNavigate(); // Se usar React Router
+export default function Cadastro() {
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-    const [email, setEmail] = useState('');
-    const [nome, setNome] = useState('');
-    const [password, setPassword] = useState('');
+  async function handleRegister(e) {
+    e.preventDefault();
 
-    const validarEmail = (email) => {
-        // Validação simples de email
-        return /\S+@\S+\.\S+/.test(email);
-    };
+    try {
+      await api.post("/auth/register", {
+        nome,
+        email,
+        password,
+      });
 
-    const handleCadastro = async (e) => {
-        e.preventDefault();
+      alert("Cadastro realizado com sucesso!");
+      window.location.href = "/login"; 
+    } catch (error) {
+      alert("Erro ao cadastrar usuário!");
+      console.error(error.response?.data || error);
+    }
+  }
 
-        if (!nome || !email || !password) {
-            toast.error('Por favor, preencha todos os campos');
-            return;
-        }
+  return (
+     <div className="todo-card">
+      <h2>Cadastro</h2>
 
-        if (!validarEmail(email)) {
-            toast.error('Email inválido');
-            return;
-        }
+      <form className="form-column" onSubmit={handleRegister}>
+        <input
+          type="text"
+          placeholder="Nome"
+          value={nome}
+          onChange={(e) => setNome(e.target.value)}
+        />
 
-        try {
-            await axios.post('http://localhost:3001/users', {
-                nome, email, password
-            });
-            toast.success('Usuário cadastrado com sucesso');
-            // Redirecionar para login ou home
-            // navigate('/login'); // Se usar React Router
-        } catch (error) {
-            toast.error('Não foi possível cadastrar novo usuário');
-        }
-    };
+        <input
+          type="email"
+          placeholder="E-mail"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-    return (
-        <div className="container">
-            <form onSubmit={handleCadastro}>
-                <h2>Cadastro</h2>
-                <div>
-                    <label>Nome: </label>
-                    <input
-                        type="text"
-                        value={nome}
-                        onChange={(e) => setNome(e.target.value)} />
-                </div>
-                <div>
-                    <label>Email: </label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)} />
-                </div>
-                <div>
-                    <label>Senha: </label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)} />
-                </div>
-                <button type="submit">Cadastrar</button>
-            </form>
-        </div>
-    );
-};
+        <input
+          type="password"
+          placeholder="Senha"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-export default Cadastro;
+        <button type="submit">Cadastrar</button>
+      </form>
+    </div>
+  );
+}

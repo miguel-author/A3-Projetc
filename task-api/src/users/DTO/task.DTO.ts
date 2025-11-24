@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString, IsEnum, IsDateString } from 'class-validator';
+import { TaskStatus } from './task.enum';
 
 export class TaskDTO {
   @ApiProperty({ example: 'Estudar NestJS', description: 'Título da tarefa' })
@@ -13,12 +14,12 @@ export class TaskDTO {
   description?: string;
 
   @ApiProperty({
-    enum: ['pendente', 'progresso', 'concluída'],
-    default: 'pendente',
+    enum: TaskStatus,
+    default: TaskStatus.PENDENTE,
   })
   @IsOptional()
-  @IsEnum(['pendente', 'progresso', 'concluída'])
-  status?: string;
+  @IsEnum(TaskStatus)
+  status?: TaskStatus;
 
   @ApiProperty({
     example: '2025-12-31',
@@ -32,7 +33,8 @@ export class TaskDTO {
   @ApiProperty({
     example: '6734df09121a19c70646605f',
     description: 'ID do usuário ao qual a tarefa pertence',
+    required: false,
   })
-  @IsNotEmpty()
-  userId: string;
+  @IsOptional()
+  userId?: string;
 }

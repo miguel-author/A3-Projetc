@@ -1,0 +1,212 @@
+/* ===== TO-DO LIST CARD ===== */
+.todo-card {
+  background: #ffffff;
+  width: 420px;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0px 10px 30px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+body {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #15003b; /* opcional, só pra ficar bonito */
+  margin: 0;
+}
+/* ===== Title ===== */
+.todo-title {
+  font-size: 26px;
+  font-weight: 600;
+  color: #2a2745;
+}
+
+/* ===== Input Row ===== */
+.input-row {
+  display: flex;
+  gap: 12px;
+}
+
+.todo-input {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  border: 2px solid #ddd;
+  background: #f7f7f7;
+  font-size: 15px;
+  outline: none;
+}
+
+.todo-input:focus {
+  border-color: #6d63ff;
+  box-shadow: 0 0 8px #6d63ff50;
+}
+
+/* ===== Button ADD ===== */
+.todo-btn {
+  background: #ff2c73;
+  border: none;
+  padding: 14px 26px;
+  font-size: 15px;
+  color: white;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.todo-btn:hover {
+  transform: scale(1.05);
+}
+
+/* === TODO CARD === */
+.todo-card {
+  background: #ffffff;
+  padding: 30px;
+  width: 380px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  box-shadow: 8px 8px 20px #0f0e1a, -8px -8px 20px #2b2954;
+}
+
+.todo-card h2 {
+  color: #151525;
+  margin-bottom: 10px;
+}
+
+/* === LISTA === */
+.todo-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* === ITEM === */
+.todo-item {
+  background: #22223a;
+  color: white;
+  padding: 14px 18px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: 0.25s ease-in-out;
+  cursor: pointer;
+}
+
+.todo-item:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 12px #6d63ff;
+}
+
+/* === Item concluído === */
+.todo-item.done {
+  background: #e4ffe6;
+  border-left: 6px solid #00c853;
+  text-decoration: line-through;
+  color: #4caf50;
+  opacity: 0.8;
+  transform: translateX(6px);
+}
+
+/* === BOTÃO EXCLUIR === */
+.todo-item .delete-btn {
+  background: #ff3b3b;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.todo-item .delete-btn:hover {
+  background: #ff5c5c;
+}
+
+/* === BOTÃO NOVA TAREFA === */
+.add-btn {
+  width: 70%;
+  background: #ff2c73;
+  color: white;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.add-btn:hover {
+  transform: scale(1.05);
+}
+
+
+/* ===== delete button ===== */
+.delete-btn {
+  background: #ff3b3b;
+  border: none;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.delete-btn:hover {
+  background: #ff1f1f;
+  transform: scale(1.1);
+}
+
+.form-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+input {
+  width: 240px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #aaa;
+  font-size: 16px;
+}
+
+button {
+  background: #FF2C7D;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: .2s;
+  font-weight: bold;
+}
+
+button:hover {
+  background: #ff0d69;
+}
+
+/* Inputs em coluna */
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Link Criar Conta */
+.register-link {
+  color: #6a009e;
+  font-size: 14px;
+  text-decoration: none;
+  margin-top: -10px;
+}
+
+.register-link:hover {
+  text-decoration: underline;
+}

@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 // Schemas Mongoose
 import { User, UserSchema } from './schemas/user.schema';
 import { Task, TaskSchema } from './schemas/task.schema';
+import { Counter, CounterSchema } from './schemas/counter.schema';
 
 // Controllers
 import { UsersController } from './controller/users.controller';
@@ -26,6 +27,7 @@ import { TaskService } from './service/task.service';
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Task.name, schema: TaskSchema },
+      { name: Counter.name, schema: CounterSchema },
     ]),
   ],
   controllers: [

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Task, TaskDocument } from '../schemas/task.schema';
@@ -12,55 +12,97 @@ export class TaskService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
   ) {}
 
-  async create(dto: TaskDTO): Promise<Task> {
-    if (!Types.ObjectId.isValid(dto.userId)) {
-      throw new BadRequestException('ID de usuário inválido.');
+  /**
+   * Cria uma nova tarefa associada ao usuário autenticado.
+   */
+  async create(userId: string, dto: TaskDTO) {
+  // valida se userId é um ObjectId válido
+  if (!Types.ObjectId.isValid(userId)) {
+    throw new BadRequestException('ID de usuário inválido.');
+  }
+
+  // verifica se o usuário existe
+  const user = await this.userModel.findById(userId);
+  if (!user) throw new NotFoundException('Usuário não encontrado.');
+
+  // cria a task vinculada ao usuário pelo ObjectId
+  const task = new this.taskModel({
+    ...dto,
+    userId,
+  });
+
+  const saved = await task.save();
+
+  // registrar referência
+  await this.userModel.updateOne(
+    { _id: userId },
+    { $push: { tasksIds: saved._id.toString() } }
+  );
+
+  // 🔥 AGORA RETORNA RESPOSTA JSON CORRETA
+  return saved.toObject({ versionKey: false });
+}
+
+  /**
+   * Lista todas as tarefas do usuário logado
+   */
+  async findAll(userId: string): Promise<Task[]> {
+    return this.taskModel
+      .find({ userId })
+      .lean()
+      .exec();
+  }
+
+  /**
+   * Busca uma tarefa específica pelo ID
+   */
+  async findById(id: string, userId: string): Promise<Task> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('ID inválido.');
     }
-
-    const user = await this.userModel.findById(dto.userId);
-    if (!user) throw new NotFoundException('Usuário não encontrado.');
-
-    const task = new this.taskModel(dto);
-    const saved = await task.save();
-
-    // opcional: registrar referência
-    await this.userModel.updateOne(
-      { _id: dto.userId },
-      { $push: { tasksIds: saved._id.toString() } },
-    );
-
-    return saved.toObject({ versionKey: false });
-  }
-
-  async findAll(): Promise<Task[]> {
-    return this.taskModel.find().lean().exec();
-  }
-
-  async findById(id: string): Promise<Task> {
-    if (!Types.ObjectId.isValid(id)) throw new BadRequestException('ID inválido.');
 
     const task = await this.taskModel.findById(id).lean().exec();
     if (!task) throw new NotFoundException('Tarefa não encontrada.');
 
+    // impede acessar tarefa de outro usuário
+    if (task.userId?.toString() !== userId) {
+      throw new ForbiddenException('Você não tem permissão para acessar esta tarefa.');
+    }
+
     return task;
   }
 
-  async update(id: string, dto: Partial<Task>): Promise<Task> {
-    const updated = await this.taskModel
-      .findByIdAndUpdate(id, dto, { new: true })
-      .lean()
-      .exec();
+  /**
+   * Atualiza uma tarefa somente se pertence ao usuário corretamente
+   */
+  async update(id: string, userId: string, dto: Partial<TaskDTO>): Promise<Task> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('ID inválido.');
+    }
 
-    if (!updated) throw new NotFoundException('Tarefa não encontrada.');
+    const task = await this.taskModel.findById(id);
+    if (!task) throw new NotFoundException('Tarefa não encontrada.');
 
-    return updated;
+    if (task.userId.toString() !== userId) {
+      throw new ForbiddenException('Você não pode editar esta tarefa.');
+    }
+
+    Object.assign(task, dto);
+
+    const updated = await task.save();
+    return updated.toObject({ versionKey: false });
   }
 
-  async remove(id: string): Promise<void> {
-    const removed = await this.taskModel.findByIdAndDelete(id).exec();
-    if (!removed) throw new NotFoundException('Tarefa não encontrada.');
+  /**
+   * Remove uma tarefa e valida se pertence ao usuário
+   */
+  async remove(id: string, userId: string): Promise<void> {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('ID inválido.');
+    }
 
-    // limpa referência em usuários
-    await this.userModel.updateMany({}, { $pull: { tasksIds: id } });
+    const removed = await this.taskModel.findOneAndDelete({ _id: id, userId }).exec();
+
+    if (!removed) throw new NotFoundException('Tarefa não encontrada ou não pertence ao usuário.');
   }
 }
