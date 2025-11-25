@@ -16,28 +16,34 @@ import { TaskService } from './service/task.service';
 
 /**
  * Módulo responsável pelas funcionalidades de Usuários e Tarefas.
- * 
- * - Registra Schemas do MongoDB usando MongooseModule.
- * - Expõe Controllers para rotas HTTP.
- * - Expõe Services para lógica de negócio e acesso ao banco.
+ *
+ * - Registra modelos (schemas) para o MongoDB usando MongooseModule.
+ * - Expõe controllers que recebem as requisições HTTP.
+ * - Expõe services onde estão as regras de negócio e manipulação dos dados.
  */
 @Module({
   imports: [
-    // Registra os modelos User e Task no Mongoose
+    // Registra os modelos no NestJS/Mongoose permitindo injeção via InjectModel()
     MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema },
-      { name: Task.name, schema: TaskSchema },
-      { name: Counter.name, schema: CounterSchema },
+      { name: User.name, schema: UserSchema },      // Model para usuários
+      { name: Task.name, schema: TaskSchema },      // Model para tarefas
+      { name: Counter.name, schema: CounterSchema }, // Model para auto-incremento
     ]),
   ],
+
+  // Controladores responsáveis pelas rotas HTTP
   controllers: [
     UsersController,
     TaskController,
   ],
+
+  // Serviços acessados pelos controllers e aplicam regra de negócio
   providers: [
     UsersService,
     TaskService,
   ],
+
+  // Exporta serviços para outros módulos do projeto (caso necessário)
   exports: [
     UsersService,
     TaskService,

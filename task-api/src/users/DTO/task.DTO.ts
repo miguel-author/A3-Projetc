@@ -2,23 +2,26 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString, IsEnum, IsDateString } from 'class-validator';
 import { TaskStatus } from './task.enum';
 
+// DTO responsável por validar e documentar os dados de criação/edição de tarefas.
+// Ele garante que apenas campos válidos serão enviados ao banco.
 export class TaskDTO {
+
   @ApiProperty({ example: 'Estudar NestJS', description: 'Título da tarefa' })
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty() // Campo obrigatório
+  @IsString()   // Deve ser texto
   title: string;
 
   @ApiProperty({ example: 'Finalizar módulo de Mongoose', required: false })
-  @IsOptional()
-  @IsString()
+  @IsOptional() // Campo opcional
+  @IsString()   // Caso enviado, deve ser texto
   description?: string;
 
   @ApiProperty({
-    enum: TaskStatus,
+    enum: TaskStatus, // Documenta no Swagger as opções possíveis
     default: TaskStatus.PENDENTE,
   })
-  @IsOptional()
-  @IsEnum(TaskStatus)
+  @IsOptional() // Não precisa ser enviado na criação
+  @IsEnum(TaskStatus) // Garante que o valor pertence ao enum TaskStatus
   status?: TaskStatus;
 
   @ApiProperty({
@@ -27,7 +30,7 @@ export class TaskDTO {
     required: false,
   })
   @IsOptional()
-  @IsDateString()
+  @IsDateString() // Valida formato de data (YYYY-MM-DD no padrão ISO)
   expirationDate?: Date;
 
   @ApiProperty({
@@ -36,5 +39,6 @@ export class TaskDTO {
     required: false,
   })
   @IsOptional()
-  userId?: string;
+  userId?: string; 
+  // Geralmente preenchido automaticamente via token — não pelo cliente
 }
