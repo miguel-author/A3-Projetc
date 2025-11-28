@@ -2,6 +2,8 @@
 
 API para gerenciamento de usuários e tarefas construída com NestJS, Mongoose, JWT Authentication, Swagger e Clean Architecture.
 
+Video de Apresentação = https://youtu.be/InelGjIZE_k 
+
 🚀 Funcionalidades
 
 🧑‍💼 Cadastro de usuário
